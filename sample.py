@@ -3,19 +3,17 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
+# Grab the metadata file
 with open("data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#1_run1.sigmf-meta", "r") as f:
     md = json.loads(f.read())
-print(type(md))
-#print(md)
-#if md["data_file"]["global"]["dtype"] == "cf32_le":
+
+
 samples = []
 if md["_metadata"]["global"]["core:datatype"] == "cf32":
-    #samples = np.memmap("myrecord.sigmf-data", mode="r", dtype=np.complex64)
     samples = np.memmap("data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#1_run1.sigmf-data", mode="r", dtype=np.complex128)
-    print(type(samples))
-    print(samples)
-elif md["_metadata"]["global"]["core:datatype"] == "ci16":
-    samples = np.memmap("data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#1_run1.sigmf-data", mode="r", dtype=np.int16)
+else:
+    print("Unexpected data type!")
+    exit()
 
 # Extract the real and imaginary parts of the complex data
 real_part = np.real(samples)
@@ -40,7 +38,7 @@ ax2.set_ylabel('Value')
 plt.tight_layout()
 plt.show()
 
-# Playing around with FFT
+# Playing around with FFT...
 Fs = float(md["_metadata"]["global"]["core:sample_rate"])
 N = len(samples)
 S = np.fft.fftshift(np.fft.fft(samples))
