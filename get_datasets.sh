@@ -9,45 +9,45 @@ DATA_DIR="data"
 mkdir -v -p "$DATA_DIR"
 
 # Clean the tmp directory
-echo -n "Cleaning out $DATA_DIR/tmp..."
+printf "Cleaning out %s/tmp..." "$DATA_DIR"
 if rm -rf "$DATA_DIR/tmp"; then
-    echo "done"
+    printf "done\n"
 else
-    echo "Failed to clean $DATA_DIR/tmp, exiting"
+    printf "Failed to clean %s/tmp, exiting.\n" "$DATA_DIR"
     exit 1
 fi
 
 # Download the zip 
-echo -n "Downloading KRI-16IQImbalances-DemodulatedData..."
+printf "Downloading KRI-16IQImbalances-DemodulatedData...\n"
 
 # Check for download failure
 if wget "$DATA_URL" -P "$DATA_DIR/tmp"; then
-    echo "Download successful."
-else 
-    echo "Download failed! Exiting"
+    printf "Download successful.\n"
+else
+    printf "Download failed! Exiting.\n"
     exit 1
 fi
 
 # find the newly downloaded zip
 NEW_FILE=$(find "$DATA_DIR/tmp" -type f)
 if [[ -z "$NEW_FILE" ]]; then
-    echo "Error! Failed to find downloaded zip file, exiting"
+    printf "Error! Failed to find downloaded zip file, exiting.\n"
     exit 1
 else
     # Uncompress the zip
-    echo "Extracting $NEW_FILE into $DATA_DIR..."
+    printf "Extracting %s into %s...\n" "$NEW_FILE" "$DATA_DIR"
 
     if unzip "$NEW_FILE" -d "$DATA_DIR"; then
-        echo "done"
+        printf "Done\n"
     else
-        echo "Extraction failed, exiting"
+        printf "Extraction failed, exiting.\n"
         exit 1
     fi
-    echo -n "Cleaning up..."
+    printf "Cleaning up..."
     if rm -rf "$DATA_DIR/tmp"; then 
-        echo "done"
+        printf "done\n"
     else
-        echo "Cleanup failed! Please inspect $DATA_DIR/tmp"
+        printf "Cleanup failed! Please inspect %s/tmp\n" "$DATA_DIR"
         exit 1
     fi
 fi
