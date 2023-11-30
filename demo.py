@@ -14,11 +14,16 @@ class constants:
     WATERMARK_SINGLE_POINT = 0
     WATERMARK_SHIFT_AVG = 1
     WATERMARK_EXP = 2
-    WATERMARK_TYPE = WATERMARK_SINGLE_POINT
+    WATERMARK_TYPE = WATERMARK_SHIFT_AVG
 
     WATERMARK_POINT_IDX = 42
     WATERMARK_POINT_VAL_REAL = 0.5
     WATERMARK_POINT_VAL_IMAG = 0.5j
+    WATERMARK_POINT_VAL = WATERMARK_POINT_VAL_REAL + WATERMARK_POINT_VAL_IMAG
+
+    WATERMARK_AVG_VAL_REAL = -0.001
+    WATERMARK_AVG_VAL_IMAG = -0.001j
+    WATERMARK_AVG_VAL = WATERMARK_AVG_VAL_REAL + WATERMARK_AVG_VAL_IMAG
 
 def data_stats(samples):
     pass
@@ -81,21 +86,28 @@ def watermark_single_point(samples):
     print(f"After: Samples[{constants.WATERMARK_POINT_IDX}] = {samples[constants.WATERMARK_POINT_IDX]}")
     
 def extract_watermark_single_point(samples):
-    check_val = constants.WATERMARK_POINT_VAL_REAL + constants.WATERMARK_POINT_VAL_IMAG
+    check_val = constants.WATERMARK_POINT_VAL
     return samples[constants.WATERMARK_POINT_IDX] == check_val
 
-def watermark_shift_avg(samples):
-    pass
+def watermark_shift_avg(samples, target=constants.WATERMARK_AVG_VAL):
+    delta = np.average(samples) - target
+    length = len(samples)
+    while np.average(samples) > target:
+        #print(f"Remaining: {np.average(samples) - target}")
+        adj_val = 1000.0 * delta / length
+        samples -= complex(adj_val, adj_val)
 
-def extract_watermark_shift_avg(samples):
-    pass
+def extract_watermark_shift_avg(samples, target=constants.WATERMARK_AVG_VAL):
+    if np.average(samples) <= target:
+        return True
+    else:
+        return False
 
 def watermark_exp(samples):
     pass
 
 def extract_watermark_exp(samples):
     pass
-
 
 def watermark_samples(samples):
     watermarked = deepcopy(samples)
