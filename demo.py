@@ -10,6 +10,7 @@ class constants:
     SAMPLE_DATA_PATH = "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#1_run1.sigmf-data"
     APPLY_WATERMARK = 0
     EXTRACT_WATERMARK = 1
+    TEST_WATERMARK = 2
 
     WATERMARK_SINGLE_POINT = 0
     WATERMARK_SHIFT_AVG = 1
@@ -98,6 +99,7 @@ def watermark_shift_avg(samples, target=constants.WATERMARK_AVG_VAL):
         samples -= complex(adj_val, adj_val)
 
 def extract_watermark_shift_avg(samples, target=constants.WATERMARK_AVG_VAL):
+    print(f"Average: {np.average(samples)}")
     if np.average(samples) <= target:
         return True
     else:
@@ -120,6 +122,7 @@ def watermark_samples(samples):
             watermark_exp(watermarked)
 
     return watermarked
+
     
 
 def check_watermark(samples):
@@ -134,9 +137,29 @@ def check_watermark(samples):
 
     return is_watermarked
 
+def add_gaussian_noise(samples, strength=0.00025):
+    rands = np.random.normal(0.0, 1.0, len(samples)) * strength
+    val = [complex(num, num) for num in rands]
+    samples += val
+
+def test_extraction(samples, n_trials=100):
+    n_correct = 0
+    for i in range(0, n_trials):
+        #print(f"Before watermark: {np.average(tmp)}")
+        tmp = watermark_samples(samples)
+        #print(f"After watermark: {np.average(tmp)}")
+        add_gaussian_noise(tmp)
+        #print(f"After noise: {np.average(tmp)}")
+        if check_watermark(tmp):
+            print(f"{i}: Success!")
+            n_correct += 1
+        else:
+            print(f"{i}: Failure :(")
+    print(f"{n_correct} out of {n_trials}: {n_correct / n_trials}")
+
 
 if __name__ == "__main__":
-    choice = int(input("Select:\n\t0: Watermark Sample Data\n\t1: Test Data for Watermark\n"))
+    choice = int(input("Select:\n\t0: Watermark Sample Data\n\t1: Test Data for Watermark\n\t2: Test Watermark with Noise\n"))
     print(f"Choice: {choice}")
 
     watermarked = []
@@ -161,3 +184,7 @@ if __name__ == "__main__":
             plot_samples(clean_data)
             is_watermarked = check_watermark(clean_data)
             print(f"Clean data, Watermark Detected: {is_watermarked}")
+        case constants.TEST_WATERMARK:
+            print("Testing watermarking...")
+            data = load_KRI_samples()
+            test_extraction(data)
