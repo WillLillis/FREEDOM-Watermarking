@@ -25,6 +25,7 @@ class constants:
     WATERMARK_AVG_VAL_REAL = -0.001
     WATERMARK_AVG_VAL_IMAG = -0.001j
     WATERMARK_AVG_VAL = WATERMARK_AVG_VAL_REAL + WATERMARK_AVG_VAL_IMAG
+    WATERMARK_AVG_SCALE = 1000.0
 
 def data_stats(samples):
     pass
@@ -91,15 +92,15 @@ def extract_watermark_single_point(samples):
     return samples[constants.WATERMARK_POINT_IDX] == check_val
 
 def watermark_shift_avg(samples, target=constants.WATERMARK_AVG_VAL):
-    delta = np.average(samples) - target
+    delta = np.absolute(np.average(samples) - target)
     length = len(samples)
     while np.average(samples) > target:
         #print(f"Remaining: {np.average(samples) - target}")
-        adj_val = 1000.0 * delta / length
+        adj_val = constants.WATERMARK_AVG_SCALE * delta / length
         samples -= complex(adj_val, adj_val)
 
 def extract_watermark_shift_avg(samples, target=constants.WATERMARK_AVG_VAL):
-    print(f"Average: {np.average(samples)}")
+    #print(f"Average: {np.average(samples)}")
     if np.average(samples) <= target:
         return True
     else:
@@ -142,23 +143,75 @@ def add_gaussian_noise(samples, strength=0.00025):
     val = [complex(num, num) for num in rands]
     samples += val
 
-def test_extraction(samples, n_trials=100):
+def test_extraction(samples, noise_strength, n_trials=100):
     n_correct = 0
     for i in range(0, n_trials):
-        #print(f"Before watermark: {np.average(tmp)}")
+        #print(f"\t\t{i}")
+        if i % 20 == 0:
+            print(f"\t\t{i}")
+        #print(f"Before watermark: {np.average(samples)}")
         tmp = watermark_samples(samples)
+        #print("Watermarked samples")
         #print(f"After watermark: {np.average(tmp)}")
-        add_gaussian_noise(tmp)
+        add_gaussian_noise(tmp, strength=noise_strength)
+        #print("Added noise")
         #print(f"After noise: {np.average(tmp)}")
         if check_watermark(tmp):
-            print(f"{i}: Success!")
+            #print(f"{i}: Success!")
             n_correct += 1
         else:
-            print(f"{i}: Failure :(")
-    print(f"{n_correct} out of {n_trials}: {n_correct / n_trials}")
+            pass
+            #print(f"{i}: Failure :(")
+    print(f"\t\t{n_correct} out of {n_trials}: {n_correct / n_trials}")
 
+
+def test_stuff():
+    metadata_files = ["data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#1_run1.sigmf-meta", 
+                      "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#2_run1.sigmf-meta",
+                      "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#3_run1.sigmf-meta", # entire process hangs...
+                      "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#4_run1.sigmf-meta",
+                      "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#5_run1.sigmf-meta",
+                      "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#7_run1.sigmf-meta",
+                      "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#9_run1.sigmf-meta",
+                      "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#13_run1.sigmf-meta",
+                      "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#14_run1.sigmf-meta",
+                      "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#15_run1.sigmf-meta",
+                      "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#17_run1.sigmf-meta",
+                      "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#18_run1.sigmf-meta",
+                      "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#19_run1.sigmf-meta",
+                      "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#25_run1.sigmf-meta",
+                      "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#26_run1.sigmf-meta"]
+
+    data_files = ["data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#1_run1.sigmf-data",
+                  "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#2_run1.sigmf-data",
+                  "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#3_run1.sigmf-data",
+                  "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#4_run1.sigmf-data",
+                  "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#5_run1.sigmf-data",
+                  "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#7_run1.sigmf-data",
+                  "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#9_run1.sigmf-data",
+                  "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#13_run1.sigmf-data",
+                  "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#14_run1.sigmf-data",
+                  "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#15_run1.sigmf-data",
+                  "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#17_run1.sigmf-data",
+                  "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#18_run1.sigmf-data",
+                  "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#19_run1.sigmf-data",
+                  "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#25_run1.sigmf-data",
+                  "data/KRI-16IQImbalances-DemodulatedData/Demod_WiFi_cable_X310_3123D76_IQ#26_run1.sigmf-data"]
+    
+    noise_strengths = [0.01, 0.001, 0.0007, 0.0005, 0.00025, 0.0001, 0.00001]
+
+    #dataset_num = 2
+    for strength in range(0, len(noise_strengths)):
+        print(f"Strength: {noise_strengths[strength]}")
+        for dataset_num in range(0,len(data_files)):
+            print(f"\tDataset {dataset_num}")
+            data = load_KRI_samples(metadata_files[dataset_num], data_files[dataset_num])
+            test_extraction(data, noise_strengths[strength])
 
 if __name__ == "__main__":
+    test_stuff()
+    exit(0)
+    
     choice = int(input("Select:\n\t0: Watermark Sample Data\n\t1: Test Data for Watermark\n\t2: Test Watermark with Noise\n"))
     print(f"Choice: {choice}")
 
